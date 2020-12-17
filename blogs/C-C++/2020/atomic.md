@@ -191,8 +191,6 @@ ptr.store(p, memory_order_relaxed);
 ```
 ## Fence 和 Atomic 组合
 
-[参考](en.cppreference.com/w/cpp/atomic/atomic_thread_fence)
-
 ### Fence-atomic synchronization
 
 线程 A 的 release fence 操作 F 和线程 B 的 atomic-aquire 操作 Y 进行同步，如果满足以下条件
