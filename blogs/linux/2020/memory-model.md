@@ -26,12 +26,14 @@ linux 的 3 种内存模型，代表了物理内存页的 3 种管理方式：
 
 ```c
 /* include/asm-generic/memory_model.h */
-#define __pfn_to_page(pfn)	(mem_map + ((pfn) - ARCH_PFN_OFFSET))
+#define __pfn_to_page(pfn)  (mem_map + ((pfn) - ARCH_PFN_OFFSET))
 ```
 
 ## SPARSEMEM
 
-SPARSEMEM 主要是为了支持 memory hotplug，因为 DISCONTIGMEM 的 `node_mem_map` 是连续的数组，hotplug 会导致数组不连续
+因为 DISCONTIGMEM 的 `node_mem_map` 是连续的数组，hotplug 会导致数组不连续
+
+SPARSEMEM 主要是为了支持 memory hotplug
 
 - 分配足够多的 `mem_section`，组成一个数组 `mem_sections`
 - 没有对应内存的 `mem_section` 指向 NULL，hotplug 后指向对应的 `struct page` 数组
@@ -47,27 +49,27 @@ SPARSEMEM 主要是为了支持 memory hotplug，因为 DISCONTIGMEM 的 `node_m
 ```c
 /* include/linux/mmzone.h */
 struct mem_section {
-	unsigned long section_mem_map; // 指向 struct page 数组的指针
-	struct mem_section_usage *usage;
+    unsigned long section_mem_map; // 指向 struct page 数组的指针
+    struct mem_section_usage *usage;
 };
 
-#define __pfn_to_page(pfn)									 \
-	({														 \
-		unsigned long __pfn = (pfn);						 \
-		struct mem_section *__sec = __pfn_to_section(__pfn); \
-		__section_mem_map_addr(__sec) + __pfn;				 \
-	})
+#define __pfn_to_page(pfn)                                   \
+    ({                                                       \
+        unsigned long __pfn = (pfn);                         \
+        struct mem_section *__sec = __pfn_to_section(__pfn); \
+        __section_mem_map_addr(__sec) + __pfn;               \
+    })
 
 // 1. 通过 PFN 的高位获取 mem_section：pfn -> nr -> section
 struct mem_section *__pfn_to_section(unsigned long pfn) {
-	return __nr_to_section(pfn_to_section_nr(pfn));
+    return __nr_to_section(pfn_to_section_nr(pfn));
 }
 unsigned long pfn_to_section_nr(unsigned long pfn) {
-	return pfn >> PFN_SECTION_SHIFT;
+    return pfn >> PFN_SECTION_SHIFT;
 }
 struct mem_section *__nr_to_section(unsigned long nr) {
-	// CONFIG_SPARSEMEM_EXTREME 没有开启，mem_section 二维数组每行只有一个元素
-	return &mem_section[SECTION_NR_TO_ROOT(nr)][nr & SECTION_ROOT_MASK];
+    // CONFIG_SPARSEMEM_EXTREME 没有开启，mem_section 二维数组每行只有一个元素
+    return &mem_section[SECTION_NR_TO_ROOT(nr)][nr & SECTION_ROOT_MASK];
 }
 /* mm/sparse.c */
 struct mem_section mem_section[NR_SECTION_ROOTS][SECTIONS_PER_ROOT];
@@ -75,11 +77,12 @@ struct mem_section mem_section[NR_SECTION_ROOTS][SECTIONS_PER_ROOT];
 // 2. 返回 mem_section 所指向的 struct page 数组
 struct page *__section_mem_map_addr(struct mem_section *section)
 {
-	unsigned long map = section->section_mem_map;
-	map &= SECTION_MAP_MASK;
-	return (struct page *)map;
+    unsigned long map = section->section_mem_map;
+    map &= SECTION_MAP_MASK;
+    return (struct page *)map;
 }
 ```
+
 缺点：
 
 1. `mem_section` 如果太大，初始化的时间太长
@@ -96,34 +99,38 @@ struct page *__section_mem_map_addr(struct mem_section *section)
 ```c
 #define __pfn_to_page(pfn) (vmemmap + (pfn))
 ```
+
 x86-64 linux 默认使用 `SPARSEMEM_VMEMMAP`
 
 `vmemmap` 的实现和具体的处理器体系有关
+
 ```c
 /* arch/x86/include/asm/pgtable_64.h */
 #define vmemmap ((struct page *)VMEMMAP_START)
-#define VMEMMAP_START	   vmemmap_base
+#define VMEMMAP_START      vmemmap_base
 /* arch/x86/kernel/head64.c */
 unsigned long vmemmap_base = __VMEMMAP_BASE_L4; // 0xffffea0000000000UL
 ```
+
 完成 `vmemmap` 虚拟地址映射的是 `vmemmap_populate_basepages()`（也会根据 arch 来实现 `vmemmap_populate`）
+
 ```c
 int vmemmap_populate_basepages(unsigned long start, unsigned long end, int node)
 {
-	unsigned long addr = start;
-	for (; addr < end; addr += PAGE_SIZE) {
-		pgd = vmemmap_pgd_populate(addr, node);
-		// 之后是分别对 pud, pmd, pte 进行类似的初始化
-	}
+    unsigned long addr = start;
+    for (; addr < end; addr += PAGE_SIZE) {
+        pgd = vmemmap_pgd_populate(addr, node);
+        // 之后是分别对 pud, pmd, pte 进行类似的初始化
+    }
 }
 pgd_t * vmemmap_pgd_populate(unsigned long addr, int node)
 {
-	pgd_t *pgd = pgd_offset_k(addr);
-	vmemmap_alloc_block_zero(PAGE_SIZE, node);
-	return pgd;
+    pgd_t *pgd = pgd_offset_k(addr);
+    vmemmap_alloc_block_zero(PAGE_SIZE, node);
+    return pgd;
 }
 
 /* 使用内核的 pgd，而不是用户程序的，说明内核也可以使用类似用户态的虚拟地址 */
 // 内核的 pgd 被保存在 init_mm::pgd
-#define pgd_offset_k(address)		pgd_offset(&init_mm, (address))
+#define pgd_offset_k(address)       pgd_offset(&init_mm, (address))
 ```

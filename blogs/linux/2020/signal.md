@@ -9,7 +9,9 @@ categories:
 
 以下的内容来自《The Linux Programming Interface》
 
-# 基本概念
+# linux signal
+
+## 基本概念
 
 信号分类：
 
@@ -23,36 +25,37 @@ signal 处理方式：1. 忽略信号 2. 进程终止 3. 产生 core dump 4. 进
 
 常用信号分类和含义：
 
-| 信号	  | 含义														 |
-| ---	  | ---															 |
-| SIGABRT | `abort()` 会发送该信号，之后进程终止并产生 core dump		 |
-| SIGALRM | `alarm()`/`setitimer()` 设置的定时器到时会产生该信号		 |
-| SIGBUS  | bus error 会产生该信号，比如访问超出了 `mmap()`				 |
-| SIGCHLD | 当子进程终止时，父进程会收到该信号							 |
-| SIGCONT | 停止的进程接受该信号会重新运行，运行进程则是默认忽略		 |
-| SIGFPE  | 数学错误(floating-point exception)，如除以 0				 |
-| SIGHUP  | hang up 进程												 |
-| SIGINT  | 中断进程													 |
-| SIGIO   | IO 事件信号，`fcntl()` 设置捕获信号							 |
-| SIGKILL | 无法被拦截、忽略、捕获										 |
-| SIGPWR  | power failure signal，在电池即将耗尽前将系统正常关闭		 |
+| 信号    | 含义                                                         |
+| ---     | ---                                                          |
+| SIGABRT | `abort()` 会发送该信号，之后进程终止并产生 core dump         |
+| SIGALRM | `alarm()`/`setitimer()` 设置的定时器到时会产生该信号         |
+| SIGBUS  | bus error 会产生该信号，比如访问超出了 `mmap()`              |
+| SIGCHLD | 当子进程终止时，父进程会收到该信号                           |
+| SIGCONT | 停止的进程接受该信号会重新运行，运行进程则是默认忽略         |
+| SIGFPE  | 数学错误(floating-point exception)，如除以 0                 |
+| SIGHUP  | hang up 进程                                                 |
+| SIGINT  | 中断进程                                                     |
+| SIGIO   | IO 事件信号，`fcntl()` 设置捕获信号                          |
+| SIGKILL | 无法被拦截、忽略、捕获                                       |
+| SIGPWR  | power failure signal，在电池即将耗尽前将系统正常关闭         |
 | SIGQUIT | 前台程序接收退出字符（ctrl+\）会产生，行为是终止和 core dump |
-| SIGSEGV | 访问的内存页不存在（heap, stack），或者访问到只读内存		 |
-| SIGSTOP | 停止进程，无法被拦截、忽略、捕获							 |
+| SIGSEGV | 访问的内存页不存在（heap, stack），或者访问到只读内存        |
+| SIGSTOP | 停止进程，无法被拦截、忽略、捕获                             |
 | SIGTERM | kill 默认发送的信号，用于终止进程，可以被进程捕获来清理资源  |
-| SIGTRAP | 实现 debugger 断点、系统调用跟踪，具体 `man strace/ptrace`	 |
-| SIGUSR1 | 用户定义信号，可以用于进程同步								 |
+| SIGTRAP | 实现 debugger 断点、系统调用跟踪，具体 `man strace/ptrace`   |
+| SIGUSR1 | 用户定义信号，可以用于进程同步                               |
 
-# signal
+## signal API
+
 ```c
 #include<signal.h>
 void ( *signal(int sig, void (*handler)(int)) )(int);
 ```
 
 - 第二个参数，指向对 sig 信号的新处理函数，有三种：
-	- 自定义的信号处理函数
-	- `SIG_DFL` 表示将处理方式还原为默认
-	- `SIG_IGN` 表示处理方式为忽略该信号
+  - 自定义的信号处理函数
+  - `SIG_DFL` 表示将处理方式还原为默认
+  - `SIG_IGN` 表示处理方式为忽略该信号
 - 返回值是执行之前的 sig 信号的处理函数的指针，失败则返回 `SIG_ERR`
 - 如果需要再次捕获该信号，需要再次调用 `signal()`
 
@@ -61,14 +64,15 @@ void newhandler(int sig){}
 void (*prevhandler)(int); //存储修改之前的信号处理函数
 prehandler = signal(SIGINT, newhandler);
 if(prehandler == SIG_ERR)
-	printf("Error in signal\n");
+    printf("Error in signal\n");
 if(signal(SIGINT, prevhandler) == SIG_ERR)/* 还原 */
-	printf("Error in signal\n");
+    printf("Error in signal\n");
 ```
 
-# 发送信号
+### 发送信号
 
 `kill()` 用于一个进程向另一个进程发送信号：
+
 ```c
 #include <sys/types.h>
 #include <signal.h>
@@ -96,6 +100,7 @@ int pthread_kill(pthread_t thread, int sig);/* 将信号发送到线程 */
 - 用 `stat()` 查看 `/proc/PID`
 
 其他发送信号的方式：
+
 ```c
 #include <signal.h>
 int raise(int sig);
@@ -109,16 +114,12 @@ int killpg(int pgrp, int sig);
  * 参数 value 会传递给 sigaction 作为其入参 */
 int sigqueue(pid_t pid, int sig, const union sigval value);
 union sigval {
-	int   sival_int;
-	void *sival_ptr;
+    int   sival_int;
+    void *sival_ptr;
 };
 ```
 
-# 等待信号
-
-# signal set/mask
-
-## signal set
+### signal set/mask
 
 ```c
 #include <signal.h>
@@ -131,13 +132,12 @@ int sigdelset(sigset_t *set, int sig);
 int sigismember(const sigset_t *set, int sig);
 ```
 
-## signal mask
-
 signal mask 用于拦截发往本进程的信号（也可以是线程 `pthread_sigmask()`）
+
 ```c
 #include <signal.h>
 int sigprocmask(int how, const sigset_t *restrict set,
-		sigset_t *restrict oset);
+        sigset_t *restrict oset);
 
 
 /* 在临界区中 block SIGINT */
@@ -165,23 +165,25 @@ pending signal:
 - pending signal 不会排队，比如发送了多个信号，如果调度器还没有调度到目标进程，目标进程可能只会收到一个信号
 
 获取 pending signal set：
+
 ```c
 int sigpending(sigset_t *set);
 ```
 
-## sigaction
+### sigaction
 
 和 `signal()` 类似，`sigaction()` 也可以设置 signal handler，`sigaction()` 的可移植性更好：
+
 ```c
 int sigaction(int sig, const struct sigaction *restrict act,
    struct sigaction *restrict oact);
 
 typedef void (*__sighandler_t) (int);
 struct sigaction {
-	__sighandler_t sa_handler;
-	sigset_t sa_mask;			/* 处理 signal handler 拦截的信号集 */
-	int sa_flags;				/* Flags controlling handler invocation  */
-	void (*sa_restorer) (void);	/* Restore handler.  */
+    __sighandler_t sa_handler;
+    sigset_t sa_mask;           /* 处理 signal handler 拦截的信号集 */
+    int sa_flags;               /* Flags controlling handler invocation  */
+    void (*sa_restorer) (void); /* Restore handler.  */
 };
 
 
@@ -194,8 +196,9 @@ act.sa_sigaction = handler;
 act.sa_flags = SA_RESTART | SA_SIGINFO;
 
 if (sigaction(SIGRTMIN + 5, &act, NULL) == -1)
-	exit(1);
+    exit(1);
 ```
+
 `sa_flags` 用于改变特定信号的行为：
 
 - `SA_NODEFER`：在 signal handler 执行时，不要将信号加到 signal mask
@@ -204,59 +207,61 @@ if (sigaction(SIGRTMIN + 5, &act, NULL) == -1)
 - `SA_RESTART`：自动开始被 signal handler 中断的系统调用；如果没有设置该标志，系统调用会返回 `EINTR`
 - `SA_SIGINFO`：为 signal handler 提供额外的参数
 
-
 ### SIGINFO
 
 如果 `sigaction()` 使用了 `SA_SIGINFO`，`struct sigaction` 其实是更加复杂的，从而通过 `siginfo_t` 来提供更多信号相关的函数入参：
+
 ```c
 struct sigaction {
-	union {
-		void (*sa_handler)(int);
-		void (*sa_sigaction)(int, siginfo_t *, void *);
-	} __sigaction_handler;
-	sigset_t   sa_mask;
-	int		   sa_flags;
-	void	 (*sa_restorer)(void);
+    union {
+        void (*sa_handler)(int);
+        void (*sa_sigaction)(int, siginfo_t *, void *);
+    } __sigaction_handler;
+    sigset_t   sa_mask;
+    int        sa_flags;
+    void     (*sa_restorer)(void);
 };
 
 /* 精简版结构，去掉了 union */
 typedef struct {
-	int		si_signo;		  /* Signal number */
-	int		si_code;		  /* Signal code: 指明了信号来源 */
-	int		si_trapno;		  /* Trap number for hardware-generated signal
-								 (unused on most architectures) */
-	union sigval si_value;	  /* Accompanying data from sigqueue() */
-	pid_t	si_pid;			  /* Process ID of sending process */
-	uid_t	si_uid;			  /* Real user ID of sender */
-	int		si_errno;		  /* Error number (generally unused) */
-	void   *si_addr;		  /* Address that generated signal
-								 (hardware-generated signals only) */
-	int		si_overrun;		  /* Overrun count (Linux 2.6, POSIX timers) */
-	int		si_timerid;		  /* (Kernel-internal) Timer ID
-								 (Linux 2.6, POSIX timers) */
-	long	si_band;		  /* Band event (SIGPOLL/SIGIO) */
-	int		si_fd;			  /* File descriptor (SIGPOLL/SIGIO) */
-	int		si_status;		  /* Exit status or signal (SIGCHLD) */
-	clock_t si_utime;		  /* Child's User CPU time (SIGCHLD) */
-	clock_t si_stime;		  /* Child's System CPU time (SIGCHLD) */
+    int     si_signo;         /* Signal number */
+    int     si_code;          /* Signal code: 指明了信号来源 */
+    int     si_trapno;        /* Trap number for hardware-generated signal
+                                 (unused on most architectures) */
+    union sigval si_value;    /* Accompanying data from sigqueue() */
+    pid_t   si_pid;           /* Process ID of sending process */
+    uid_t   si_uid;           /* Real user ID of sender */
+    int     si_errno;         /* Error number (generally unused) */
+    void   *si_addr;          /* Address that generated signal
+                                 (hardware-generated signals only) */
+    int     si_overrun;       /* Overrun count (Linux 2.6, POSIX timers) */
+    int     si_timerid;       /* (Kernel-internal) Timer ID
+                                 (Linux 2.6, POSIX timers) */
+    long    si_band;          /* Band event (SIGPOLL/SIGIO) */
+    int     si_fd;            /* File descriptor (SIGPOLL/SIGIO) */
+    int     si_status;        /* Exit status or signal (SIGCHLD) */
+    clock_t si_utime;         /* Child's User CPU time (SIGCHLD) */
+    clock_t si_stime;         /* Child's System CPU time (SIGCHLD) */
 } siginfo_t;
 ```
 
 - `si_signo` 是触发的信号值
-- `si_code` 是 `si_signo` 的进一步描述，比如 `si_signo = SIGBUS`，`si_code` 可以是 `BUS_ADRALN`(非法地址对齐), `BUS_ADRERR`(不存在的物理地址)...
+- `si_code` 是 `si_signo` 的进一步描述
+  - 比如 `si_signo = SIGBUS`，`si_code` 可以是 `BUS_ADRALN`(非法地址对齐), `BUS_ADRERR`(不存在的物理地址)...
 - `si_value`：信号是通过 `sigqueue()` 发送，该字段才有意义
 - `si_addr`：一般是硬件相关信号用到的：SIGBUS, SIGSEGV，此时表示访问的非法地址
 
-# signal stack
+## signal stack
 
 信号处理使用额外（alternate）的栈，防止调用进程超出栈限制：
+
 ```c
 int sigaltstack(const stack_t *restrict ss, stack_t *restrict oss);
 
 typedef struct {
-	void *ss_sp;
-	int ss_flags;
-	size_t ss_size;
+    void *ss_sp;
+    int ss_flags;
+    size_t ss_size;
 } stack_t;
 
 // 例子
@@ -270,12 +275,13 @@ if (sigaltstack(&sigstk,(stack_t *)0) < 0)
 
 - `oss`：如果之前创建过栈，oss 返回之前的值；该参数也可以传 NULL
 - `ss_flags` 可取：
-	- `SS_ONSTACK` 表示当前进程正在 alternate signal stack 上，需要建立一个新的
-	- `SS_DISABLE` 表示禁止使用额外的信号处理栈
+  - `SS_ONSTACK` 表示当前进程正在 alternate signal stack 上，需要建立一个新的
+  - `SS_DISABLE` 表示禁止使用额外的信号处理栈
 
-# 系统调用被信号中断
+## 系统调用被信号中断
 
 `sigaction()` 使用 `SA_RESTART` 标志后，以下函数会自动重新开始：
+
 ```c
 // 等待子进程的
 wait(), waitpid(), wait3(), wait4(), waitid()
@@ -295,7 +301,9 @@ mq_receive(), mq_timedreceive(), mq_send(), mq_timedsend()
 flock(), fcntl(), lockf(), futex(), sem_wait(), sem_timedwait()
 pthread_mutex_lock(), pthread_mutex_trylock(), pthread_mutex_timedlock(), pthread_cond_wait(), pthread_cond_timedwait()
 ```
+
 以下是绝不会重新启动的：
+
 ```c
 // IO 复用相关
 poll(), ppoll(), select(), pselect()
@@ -311,14 +319,17 @@ read() // from an inotify file descriptor
 sleep(), nanosleep(), clock_nanosleep()
 pause(), sigsuspend(), sigtimedwait(), sigwaitinfo()
 ```
+
 将信号修改为 `SA_RESTART` 标志：
+
 ```c
 int siginterrupt(int sig, int flag);
 ```
 
-# 信号的更多特性
+## 信号的更多特性
 
 等待信号
+
 ```c
 // 将进程挂起，直到捕获到一个信号：
 // 总是返回 -1，且 errno 设置为 EINTR
@@ -333,12 +344,14 @@ int sigsuspend(const sigset_t *sigmask);
 int sigwaitinfo(const sigset_t *restrict set, siginfo_t *restrict info);
 // 带超时的等待信号
 int sigtimedwait(const sigset_t *restrict set,
-		siginfo_t *restrict info,
-		const struct timespec *restrict timeout);
+        siginfo_t *restrict info,
+        const struct timespec *restrict timeout);
 ```
+
 `sigsuspend()` 会将进程的 signal mask 替换为参数的 `sigmask`
 
 产生 SIGABRT 信号，即终止进程并 core dump
+
 ```c
 #include <stdlib.h>
 void abort(void);
@@ -360,17 +373,19 @@ void abort(void);
 POSIX.1b 中定义了 Realtime signals（范围是 `SIGRTMIN`~`SIGRTMAX`）
 
 - 同一个 rt 信号发送了多次，进程会接收多次
-- rt 信号可以附带数据（int 或 void*），接收方可以收到该数据
+- rt 信号可以附带数据（`int` 或 `void*`），接收方可以收到该数据
 - 如果多个 rt 信号处于 pending，数值最小的信号会优先被处理；标准信号则是根据发送时间排序
 
 发送 rt 信号：
+
 ```c
 int sigqueue(pid_t pid, int sig, const union sigval value);
 union sigval {
-	int   sival_int;
-	void *sival_ptr;
+    int   sival_int;
+    void *sival_ptr;
 };
 ```
+
 注册需要使用 `SA_SIGINFO` 的 flag，使 handler 获取数据，数据在 `siginfo_t->si_value`
 
 ## signalfd
@@ -390,11 +405,11 @@ sigprocmask(SIG_BLOCK, &mask, NULL);
 sfd = signalfd(-1, &mask, 0);
 s = read(sfd, &fdsi, sizeof(struct signalfd_siginfo));
 if (s != sizeof(struct signalfd_siginfo))
-	exit(1);
+    exit(1);
 printf("got signal %d\n", fdsi.ssi_signo);
 if (fdsi.ssi_code == SI_QUEUE) {
-	printf("ssi_pid = %d; ", fdsi.ssi_pid);
-	printf("ssi_int = %d\n", fdsi.ssi_int);
+    printf("ssi_pid = %d; ", fdsi.ssi_pid);
+    printf("ssi_int = %d\n", fdsi.ssi_int);
 }
 ```
 
@@ -404,18 +419,18 @@ if (fdsi.ssi_code == SI_QUEUE) {
 - flag 可取值：`SFD_CLOEXEC`，`SFD_NONBLOCK`
 
 signalfd 通过 read() 来读取，返回的结构如下：
+
 ```c
 /* sys/signalfd.h */
 struct signalfd_siginfo {
-	uint32_t ssi_signo;
-	int32_t ssi_errno;
-	int32_t ssi_code;
-	uint32_t ssi_pid;
-	uint32_t ssi_uid;
-	int32_t ssi_fd;
-	uint32_t ssi_tid;
-	uint32_t ssi_band;
-	...
+    uint32_t ssi_signo;
+    int32_t ssi_errno;
+    int32_t ssi_code;
+    uint32_t ssi_pid;
+    uint32_t ssi_uid;
+    int32_t ssi_fd;
+    uint32_t ssi_tid;
+    uint32_t ssi_band;
+    ...
 };
 ```
-
