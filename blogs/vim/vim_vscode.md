@@ -11,7 +11,9 @@ vim 和 vscode 基础使用技巧
 
 <!--more-->
 
-# vim
+# vim/vscode
+
+## vim
 
 ## 移动
 
@@ -19,37 +21,37 @@ vim 和 vscode 基础使用技巧
 
 vim 基本命令：
 
-| 按键 | 作用							   |
-| ---  | ---							   |
-| u    | 撤销							   |
-| x    | 删除当前光标的字符				   |
-| p    | 在光标后粘贴					   |
-| P    | 在光标前粘贴					   |
-| y    | yarn							   |
-| Y    | 相当于 yy						   |
-| d    | delete							   |
-| dd   | 删除行							   |
-| D    | 从光标处删除至行末，相当 `d$`	   |
-| c    | change;						   |
+| 按键 | 作用                              |
+| ---  | ---                               |
+| u    | 撤销                              |
+| x    | 删除当前光标的字符                |
+| p    | 在光标后粘贴                      |
+| P    | 在光标前粘贴                      |
+| y    | yarn                              |
+| Y    | 相当于 yy                         |
+| d    | delete                            |
+| dd   | 删除行                            |
+| D    | 从光标处删除至行末，相当 `d$`     |
+| c    | change;                           |
 | C    | 从光标处删除至行末，再进入 insert |
-| cc   | 和 S 相同						   |
-| a    | append;						   |
-| A    | 在行末 append					   |
-| i    | insert							   |
-| I    | 在行首非 blank 字符 insert		   |
-| f    | 向后查找						   |
-| F    | 向前查找						   |
-| U    | visual 下改为大写				   |
-| u    | visual 下改为小写				   |
-| ~    | 大小写转换						   |
-| s    | subsitute a character			   |
-| S    | subsitue line					   |
-| o    | 在该行前插入新行				   |
-| O    | 在该行后插入新行				   |
+| cc   | 和 S 相同                         |
+| a    | append;                           |
+| A    | 在行末 append                     |
+| i    | insert                            |
+| I    | 在行首非 blank 字符 insert        |
+| f    | 向后查找                          |
+| F    | 向前查找                          |
+| U    | visual 下改为大写                 |
+| u    | visual 下改为小写                 |
+| ~    | 大小写转换                        |
+| s    | subsitute a character             |
+| S    | subsitue line                     |
+| o    | 在该行前插入新行                  |
+| O    | 在该行后插入新行                  |
 | J    | Join, 删除行未的换行符，连接两行  |
-| #    | 搜索光标下的单词				   |
-| .    | 在 normal 下重复上一次的动作	   |
-| `<<` | 减小缩进						   |
+| #    | 搜索光标下的单词                  |
+| .    | 在 normal 下重复上一次的动作      |
+| `<<` | 减小缩进                          |
 
 单词和字符串移动（单词默认是以空格分隔的，字符串以标点作为分隔）：
 
@@ -79,32 +81,34 @@ vim 基本命令：
 
 normal 模式下的 ctrl 快捷键：
 
-| 键位			 | 含义									   |
-| ---			 | ---									   |
-| ctrl+d, ctrl+u | page down / page up (半个屏幕)		   |
+| 键位           | 含义                                    |
+| ---            | ---                                     |
+| ctrl+d, ctrl+u | page down / page up (半个屏幕)          |
 | ctrl+f, ctrl+b | page forward / page backward (一个屏幕) |
-| ctrl+y/ctrl+e  | 向上/向下移动一行，但是光标不移动	   |
-| ctrl+g		 | 显示当前文件相对工程的路径			   |
+| ctrl+y/ctrl+e  | 向上/向下移动一行，但是光标不移动       |
+| ctrl+g         | 显示当前文件相对工程的路径              |
 
 insert 模式下的 ctrl 快捷键
 
-| 键位			 | 含义					   |
-| ---			 | ---					   |
-| ctrl+w		 | 删除一个单词			   |
-| ctrl+u		 | 从光标位置删除到行首    |
-| ctrl+r		 | redo，和 u 的 undo 相反 |
-| ctrl+o		 | 进入 normal mode		   |
-| ctrl+u		 | 重新编辑本行			   |
-| crtl+d, ctrl+t | 左右缩进				   |
+| 键位           | 含义                    |
+| ---            | ---                     |
+| ctrl+w         | 删除一个单词            |
+| ctrl+u         | 从光标位置删除到行首    |
+| ctrl+r         | redo，和 u 的 undo 相反 |
+| ctrl+o         | 进入 normal mode        |
+| ctrl+u         | 重新编辑本行            |
+| crtl+d, ctrl+t | 左右缩进                |
 
 ## buffer/window/tab
 
 ### buffer
 
 vim 启动时打开多个 buffer：
-```bash
+
+```sh
 vim -e file.txt file2.txt
 ```
+
 命令：
 
 - `:e[dit]`：打开某个文件到缓冲区
@@ -112,14 +116,15 @@ vim -e file.txt file2.txt
 - `Ctrl+^`（无需 Shift）来切换 window 的当前和上一个缓冲区
 
 还有其他的命令：
+
 ```vim
 :ls, :buffers       "列出所有缓冲区
 :bn[ext]            "下一个缓冲区
 :bp[revious]        "上一个缓冲区
 :b {number, expression}     "跳转到指定缓冲区
 
-:b2					"将会跳转到编号为2的缓冲区
-:b exa				"将会跳转到最匹配exa的文件名
+:b2                 "将会跳转到编号为2的缓冲区
+:b exa              "将会跳转到最匹配exa的文件名
 
 " 分屏
 :sb 3               "分屏并打开编号为3的Buffer
@@ -129,10 +134,13 @@ vim -e file.txt file2.txt
 ### tabe
 
 用多个标签页启动 Vim
-```bash
+
+```sh
 vim -p main.cpp my-oj-toolkit.h /private/etc/hosts
 ```
+
 常用命令：
+
 ```vim
 :tabp      "前一个
 :tabn      "后一个
@@ -141,26 +149,31 @@ vim -p main.cpp my-oj-toolkit.h /private/etc/hosts
 
 " 打开和关闭 tab
 :tabe[dit] {file}   "edit specified file in a new tab
-:tabf[ind] {file}   "open a new tab with filename given, searching the 'path' to find it
+:tabf[ind] {file}   "searching the 'path' to find it
 :tabc[lose]         "close current tab
 :tabc[lose] {i}     "close i-th tab
 :tabo[nly]          "close all other tabs (show only the current tab)
 ```
+
 normal 跳转前后 tabe 命令：gt, gT
+
 ```vim
 nnoremap <M-1> 1gt
-noremap <M-l> gt	"go to next tab
-noremap <M-h> gT	"go to previous tab
+noremap <M-l> gt    "go to next tab
+noremap <M-h> gT    "go to previous tab
 ```
 
 ### window
 
 分屏打开多个文件
-```bash
+
+```sh
 vim -O main.cpp my-oj-toolkit.h
 # -o 可以水平分屏
 ```
+
 vim 的优势在于在不同的 window 下打开同一个文件，可以同时编辑文件的不同地方，常用命令：
+
 ```vim
 " 打开/关闭窗口
 :sp[lit] {file}     " 水平分屏
@@ -169,6 +182,7 @@ vim 的优势在于在不同的 window 下打开同一个文件，可以同时�
 :vs[plit] {file}    " 垂直分屏
 :clo[se]            " 关闭当前窗口
 ```
+
 打开关闭快捷键（有共同的前缀：`Ctrl+w`），`:help window`
 
 - `Ctrl+w s`：水平分割当前窗口
@@ -217,18 +231,18 @@ vim 用单一的字符表示
 
 特殊的标记：
 
-| 命令 | 跳转至						  |
-| ---  | ---						  |
-| `[`  | 上一次修改或复制字符		  |
+| 命令 | 跳转至                       |
+| ---  | ---                          |
+| `[`  | 上一次修改或复制字符         |
 | `<`  | 上一次在可视模式下选取的字符 |
-| `'`  | 上一次跳转之前的光标位置	  |
+| `'`  | 上一次跳转之前的光标位置     |
 | `^`  | 上一次插入字符后的光标位置   |
-| `(`  | 当前句子的开头				  |
-| `{`  | 当前段落的开头				  |
-| `}`  | 当前段落的结尾				  |
-| `.`  | 最后一次修改的地方			  |
+| `(`  | 当前句子的开头               |
+| `{`  | 当前段落的开头               |
+| `}`  | 当前段落的结尾               |
+| `.`  | 最后一次修改的地方           |
 
-# vscode 快捷键
+## vscode 快捷键
 
 [参考](https://code.visualstudio.com/shortcuts/keyboard-shortcuts-linux.pdf)
 
@@ -369,4 +383,3 @@ Multi-cursor and selection
 | ctrl+shift+\` | 新建 terminal      |
 | ctrl+shift+c  | 在 terminal 内复制 |
 | ctrl+shift+v  | 在 terminal 内粘贴 |
-
