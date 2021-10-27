@@ -17,6 +17,6 @@ jobs:
       - name: leisiji
         uses: JamesIves/github-pages-deploy-action@3.5.9
         with:
-          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}   // 这里需要设置成你的 token
+          ACCESS_TOKEN: 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
           BRANCH: gh-pages
           FOLDER: public
