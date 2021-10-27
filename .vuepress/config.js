@@ -1,7 +1,7 @@
 module.exports = {
   title: "leisiji-blog",
   description: 'Study Programs And Record Life. ',
-  dest: 'public',
+  dest: 'docs',
   base: '/leisiji-blog/',
   head: [
     ['link', { rel: 'icon', href: '/favicon.ico' }],
