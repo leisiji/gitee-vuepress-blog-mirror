@@ -2,7 +2,7 @@ module.exports = {
   title: "leisiji-blog",
   description: 'Study Programs And Record Life. ',
   dest: 'docs',
-  base: '/leisiji-blog/',
+  base: '/gitee-vuepress-blog-mirror/',
   head: [
     ['link', { rel: 'icon', href: '/favicon.ico' }],
     ['meta', { name: 'viewport', content: 'width=device-width,initial-scale=1,user-scalable=no' }]
